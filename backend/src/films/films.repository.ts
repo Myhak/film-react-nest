@@ -1,62 +1,52 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { FilmDocument } from './schemas/film.schema';
-import { Schedule } from './schemas/schedule.schema';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Film } from './entities/film.entity';
+import { Schedule } from './entities/schedule.entity';
 
 @Injectable()
 export class FilmsRepository {
   constructor(
-    @InjectModel('Film')
-    private readonly filmModel: Model<FilmDocument>,
+    @InjectRepository(Film)
+    private readonly filmRepository: Repository<Film>,
+    @InjectRepository(Schedule)
+    private readonly scheduleRepository: Repository<Schedule>,
   ) {}
 
-  async findAll(): Promise<FilmDocument[]> {
-    return this.filmModel.find().exec();
+  async findAll(): Promise<Film[]> {
+    return this.filmRepository.find();
   }
 
-  async findById(id: string): Promise<FilmDocument | null> {
-    if (!Types.ObjectId.isValid(id)) {
-      return null;
-    }
-    return this.filmModel.findById(id).exec();
+  async findById(id: string): Promise<Film | null> {
+    return this.filmRepository.findOne({ where: { id } });
   }
 
-  async findScheduleByFilmId(id: string): Promise<Schedule[] | null> {
-    if (!Types.ObjectId.isValid(id)) {
-      return null;
-    }
-    const film = await this.filmModel.findById(id).exec();
-    return film?.schedule || null;
+  async findScheduleByFilmId(filmId: string): Promise<Schedule[] | null> {
+    const film = await this.filmRepository.findOne({
+      where: { id: filmId },
+      relations: ['schedules'],
+    });
+    return film?.schedules || null;
   }
 
-  async findScheduleById(filmId: string, scheduleId: string): Promise<Schedule | null> {
-    if (!Types.ObjectId.isValid(filmId) || !Types.ObjectId.isValid(scheduleId)) {
-      return null;
-    }
-    const film = await this.filmModel.findById(filmId).exec();
-    if (!film) {
-      return null;
-    }
-    const schedule = film.schedule.find(s => s._id.toString() === scheduleId);
-    return schedule || null;
+  async findScheduleById(
+    filmId: string,
+    scheduleId: string,
+  ): Promise<Schedule | null> {
+    return this.scheduleRepository.findOne({
+      where: { id: scheduleId, filmId },
+    });
   }
 
   async addTakenSeats(
     filmId: string,
     scheduleId: string,
-    seats: string[]
+    seats: string[],
   ): Promise<boolean> {
-    if (!Types.ObjectId.isValid(filmId) || !Types.ObjectId.isValid(scheduleId)) {
-      return false;
-    }
+    const schedule = await this.scheduleRepository.findOne({
+      where: { id: scheduleId, filmId },
+    });
 
-    const film = await this.filmModel.findById(filmId).exec();
-    if (!film) {
-      return false;
-    }
-
-    const schedule = film.schedule.find(s => s._id.toString() === scheduleId);
     if (!schedule) {
       return false;
     }
@@ -69,14 +59,14 @@ export class FilmsRepository {
     }
 
     // Добавляем занятые места
-    schedule.taken.push(...seats);
-    await film.save();
+    schedule.taken = [...schedule.taken, ...seats];
+    await this.scheduleRepository.save(schedule);
 
     return true;
   }
 
-  async create(filmData: Partial<FilmDocument>): Promise<FilmDocument> {
-    const createdFilm = new this.filmModel(filmData);
-    return createdFilm.save();
+  async create(filmData: Partial<Film>): Promise<Film> {
+    const film = this.filmRepository.create(filmData);
+    return this.filmRepository.save(film);
   }
 }

@@ -1,7 +1,15 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { OrdersRepository } from '../repository/orders.repository';
 import { FilmsRepository } from '../films/films.repository';
-import { CreateOrderDto, OrderResponseDto, OrderItemDto } from './dto/order.dto';
+import {
+  CreateOrderDto,
+  OrderResponseDto,
+  OrderItemDto,
+} from './dto/order.dto';
 
 @Injectable()
 export class OrderService {
@@ -18,11 +26,14 @@ export class OrderService {
     }
 
     // Группируем билеты по фильмам и сессиям для проверки доступности мест
-    const ticketsBySession = new Map<string, { filmId: string; scheduleId: string; seats: string[] }[]>();
+    const ticketsBySession = new Map<
+      string,
+      { filmId: string; scheduleId: string; seats: string[] }[]
+    >();
 
     for (const ticket of tickets) {
       const sessionKey = `${ticket.film}:${ticket.session}`;
-      
+
       if (!ticketsBySession.has(sessionKey)) {
         ticketsBySession.set(sessionKey, []);
       }
@@ -38,15 +49,20 @@ export class OrderService {
     // Проверяем и бронируем места для каждой сессии
     for (const [sessionKey, sessionTickets] of ticketsBySession.entries()) {
       const [filmId, scheduleId] = sessionKey.split(':');
-      
+
       // Проверяем существование фильма и сессии
-      const schedule = await this.filmsRepository.findScheduleById(filmId, scheduleId);
+      const schedule = await this.filmsRepository.findScheduleById(
+        filmId,
+        scheduleId,
+      );
       if (!schedule) {
-        throw new NotFoundException(`Session ${scheduleId} for film ${filmId} not found`);
+        throw new NotFoundException(
+          `Session ${scheduleId} for film ${filmId} not found`,
+        );
       }
 
       // Собираем все места для этой сессии
-      const allSeats = sessionTickets.flatMap(t => t.seats);
+      const allSeats = sessionTickets.flatMap((t) => t.seats);
 
       // Проверяем, что места не заняты
       for (const seat of allSeats) {
@@ -56,15 +72,21 @@ export class OrderService {
       }
 
       // Бронируем места
-      const success = await this.filmsRepository.addTakenSeats(filmId, scheduleId, allSeats);
+      const success = await this.filmsRepository.addTakenSeats(
+        filmId,
+        scheduleId,
+        allSeats,
+      );
       if (!success) {
-        throw new BadRequestException(`Failed to book seats for session ${sessionKey}`);
+        throw new BadRequestException(
+          `Failed to book seats for session ${sessionKey}`,
+        );
       }
     }
 
     // Создаём заказ
-    const orderItems: OrderItemDto[] = tickets.map(ticket => ({
-      id: new Date().getTime().toString() + Math.random().toString(36).substr(2, 9),
+    const orderItems: OrderItemDto[] = tickets.map((ticket) => ({
+      id: crypto.randomUUID(),
       film: ticket.film,
       session: ticket.session,
       daytime: ticket.daytime,
