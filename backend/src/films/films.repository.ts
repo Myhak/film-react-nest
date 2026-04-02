@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Film } from './entities/film.entity';
@@ -17,8 +17,12 @@ export class FilmsRepository {
     return this.filmRepository.find();
   }
 
-  async findById(id: string): Promise<Film | null> {
-    return this.filmRepository.findOne({ where: { id } });
+  async findById(id: string): Promise<Film> {
+    const film = await this.filmRepository.findOne({ where: { id } });
+    if (!film) {
+      throw new NotFoundException(`Film with id ${id} not found`);
+    }
+    return film;
   }
 
   async findScheduleByFilmId(filmId: string): Promise<Schedule[] | null> {
