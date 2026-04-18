@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(del *)",
+      "Bash(mkdir *)",
+      "Bash(npm run *)",
+      "Bash(netstat *)",
+      "Bash(findstr *)",
+      "Bash(docker ps *)",
+      "Bash(psql *)",
+      "Bash(cd *)",
+      "Bash(echo *)",
+      "Bash(where *)",
+      "Bash(dir *)",
+      "Bash(\"c:\\program files\\postgresql\\18\\bin\\psql.exe\" *)",
+      "Bash(powershell *)",
+      "Bash(taskkill *)",
+      "Bash(timeout *)",
+      "Bash(node *)",
+      "Bash(tasklist)",
+      "Bash(rmdir *)"
+    ]
+  },
+  "$version": 3
+}

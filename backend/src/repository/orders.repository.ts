@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Types } from 'mongoose';
 
 export interface OrderItem {
   id: string;
@@ -26,7 +25,7 @@ export class OrdersRepository {
   async create(order: Omit<Order, 'id' | 'createdAt'>): Promise<Order> {
     const newOrder: Order = {
       ...order,
-      id: new Types.ObjectId().toString(),
+      id: crypto.randomUUID(),
       createdAt: new Date(),
     };
     this.orders.push(newOrder);
@@ -38,6 +37,6 @@ export class OrdersRepository {
   }
 
   async findById(id: string): Promise<Order | null> {
-    return this.orders.find(o => o.id === id) || null;
+    return this.orders.find((o) => o.id === id) || null;
   }
 }
