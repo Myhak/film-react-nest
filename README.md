@@ -1,5 +1,25 @@
 # FILM!
 
+## Деплой
+
+Проект задеплоен по адресу: **https://your-domain.nomoreparties.site**
+
+pgAdmin доступен на: **https://your-domain.nomoreparties.site:8080**
+
+## Запуск через Docker
+
+```bash
+# Собрать и запустить все сервисы
+docker compose up -d --build
+
+# Проверить статус контейнеров
+docker compose ps
+```
+
+После запуска:
+- Приложение: http://localhost
+- pgAdmin: http://localhost:8080 (логин: `admin@admin.com`, пароль: `admin`)
+
 ## Установка
 
 ### MongoDB
