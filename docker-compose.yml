@@ -5,23 +5,19 @@ services:
     image: ghcr.io/myhak/film-react-nest-frontend:latest
     volumes:
       - frontend_dist:/usr/share/nginx/html
+    restart: no
 
   backend:
     build:
       context: ./backend
     image: ghcr.io/myhak/film-react-nest-backend:latest
-    environment:
-      DATABASE_HOST: postgres
-      DATABASE_PORT: 5432
-      DATABASE_USERNAME: ${POSTGRES_USER:-postgres}
-      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      DATABASE_URL: ${POSTGRES_DB:-films}
-      NODE_ENV: production
-      LOG_FORMAT: json
+    env_file:
+      - .env
     depends_on:
       - postgres
     networks:
       - film_network
+    restart: unless-stopped
 
   nginx:
     build:
@@ -38,29 +34,29 @@ services:
         condition: service_started
     networks:
       - film_network
+    restart: unless-stopped
 
   postgres:
     image: postgres:15
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-films}
+    env_file:
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - film_network
+    restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    env_file:
+      - .env
     ports:
       - "8080:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
       - film_network
+    restart: unless-stopped
 
 volumes:
   postgres_data:

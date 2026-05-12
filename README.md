@@ -1,18 +1,27 @@
 # FILM!
 
-## Деплой
+## Ссылки
 
-Проект задеплоен по адресу: **https://your-domain.nomoreparties.site**
-
-pgAdmin доступен на: **https://your-domain.nomoreparties.site:8080**
+- **Приложение:** http://111.88.156.117
+- **pgAdmin:** http://111.88.156.117:8080
 
 ## Запуск через Docker
 
-```bash
-# Собрать и запустить все сервисы
-docker compose up -d --build
+Скопируй `.env.example` в `.env` и при необходимости измени значения:
 
-# Проверить статус контейнеров
+```bash
+cp .env.example .env
+```
+
+Собери и запусти все сервисы:
+
+```bash
+docker compose up -d --build
+```
+
+Проверь статус контейнеров:
+
+```bash
 docker compose ps
 ```
 
@@ -20,37 +29,26 @@ docker compose ps
 - Приложение: http://localhost
 - pgAdmin: http://localhost:8080 (логин: `admin@admin.com`, пароль: `admin`)
 
-## Установка
+Для заполнения базы данных выполни SQL-файлы из `backend/test/` в Query Tool pgAdmin:
+1. `init.sql`
+2. `films.sql`
+3. `schedules.sql`
 
-### MongoDB
-
-Установите MongoDB скачав дистрибутив с официального сайта или с помощью пакетного менеджера вашей ОС. Также можно воспользоваться Docker (см. ветку `feat/docker`.
-
-Выполните скрипт `test/mongodb_initial_stub.js` в консоли `mongo`.
+## Локальная разработка
 
 ### Бэкенд
 
-Перейдите в папку с исходным кодом бэкенда
+```bash
+cd backend
+cp .env.example .env
+npm install
+npm run start:dev
+```
 
-`cd backend`
+### Фронтенд
 
-Установите зависимости (точно такие же, как в package-lock.json) помощью команд
-
-`npm ci` или `yarn install --frozen-lockfile`
-
-Создайте `.env` файл из примера `.env.example`, в нём укажите:
-
-* `DATABASE_DRIVER` - тип драйвера СУБД - в нашем случае это `mongodb` 
-* `DATABASE_URL` - адрес СУБД MongoDB, например `mongodb://127.0.0.1:27017/practicum`.  
-
-MongoDB должна быть установлена и запущена.
-
-Запустите бэкенд:
-
-`npm start:debug`
-
-Для проверки отправьте тестовый запрос с помощью Postman или `curl`.
-
-
-
-
+```bash
+cd frontend
+npm install
+npm run dev
+```
